@@ -9,6 +9,149 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mysql"
   url      = env("DATABASE_URL")
 }
+
+
+
+model Client {
+  id           Int       @id @default(autoincrement())
+  email        String    @unique
+  mot_de_passe String
+  prenom       String
+  nom          String
+  telephone    String
+  emplacement  Emplacement? @relation(fields: [emplacement_id], references: [id])
+  emplacement_id Int?
+  note         Float?
+  trajets      Trajet[]
+  cree_le      DateTime  @default(now())
+  mis_a_jour_le DateTime  @updatedAt
+}
+
+
+model Administrateur {
+  id           Int       @id @default(autoincrement())
+  email        String    @unique
+  mot_de_passe String
+  prenom       String
+  nom          String
+  cree_le      DateTime  @default(now())
+  mis_a_jour_le DateTime  @updatedAt
+}
+
+
+model Conducteur {
+  id            Int           @id @default(autoincrement())
+  numero_permis String        @unique
+  note          Float?
+  statut        StatutConducteur @default(DISPONIBLE)
+  vehicules     Vehicule[]
+  trajets       Trajet[]
+  cree_le       DateTime      @default(now())
+  mis_a_jour_le DateTime      @updatedAt
+}
+
+
+enum StatutConducteur {
+  DISPONIBLE
+  OCCUPE
+  SUSPENDU
+}
+
+
+model Vehicule {
+  id           Int           @id @default(autoincrement())
+  plaque       String        @unique
+  marque       String
+  modele       String
+  annee        Int
+  couleur      String
+  statut       StatutVehicule @default(DISPONIBLE)
+  conducteur   Conducteur?    @relation(fields: [conducteur_id], references: [id])
+  conducteur_id Int?
+  trajets      Trajet[]
+  cree_le      DateTime      @default(now())
+  mis_a_jour_le DateTime      @updatedAt
+}
+
+
+enum StatutVehicule {
+  DISPONIBLE
+  UTILISE
+  MAINTENANCE
+}
+
+
+model Trajet {
+  id               Int           @id @default(autoincrement())
+  emplacement_depart Emplacement @relation(fields: [emplacement_depart_id], references: [id], name: "TrajetDepart")
+  emplacement_depart_id Int
+  emplacement_arrivee Emplacement @relation(fields: [emplacement_arrivee_id], references: [id], name: "TrajetArrivee")
+  emplacement_arrivee_id Int
+  heure_depart       DateTime
+  heure_arrivee      DateTime
+  distance          Float
+  duree             Int
+  statut            StatutTrajet  @default(EN_ATTENTE)
+  prix              Decimal
+  note              Float?
+  client            Client        @relation(fields: [client_id], references: [id])
+  client_id         Int
+  conducteur        Conducteur?   @relation(fields: [conducteur_id], references: [id])
+  conducteur_id     Int?
+  vehicule          Vehicule?     @relation(fields: [vehicule_id], references: [id])
+  vehicule_id       Int?
+  cree_le           DateTime      @default(now())
+  mis_a_jour_le     DateTime      @updatedAt
+  paiements Paiement[]
+}
+
+
+enum StatutTrajet {
+  EN_ATTENTE
+  ACCEPTE
+  EN_COURS
+  TERMINE
+  ANNULE
+}
+
+
+model Paiement {
+  id              Int            @id @default(autoincrement())
+  montant         Decimal
+  mode_paiement   ModePaiement
+  statut          StatutPaiement @default(EN_ATTENTE)
+  trajet          Trajet         @relation(fields: [trajet_id], references: [id])
+  trajet_id       Int
+  cree_le         DateTime       @default(now())
+  mis_a_jour_le   DateTime       @updatedAt
+}
+
+
+enum ModePaiement {
+  CARTE_CREDIT
+  CARTE_DEBIT
+  PORTEFEUILLE_MOBILE
+}
+
+
+enum StatutPaiement {
+  EN_ATTENTE
+  PAYE
+  ECHEC
+  REMBOURSE
+}
+
+
+model Emplacement {
+  id        Int     @id @default(autoincrement())
+  latitude  Float
+  longitude Float
+  clients   Client[]
+  trajets_depart Trajet[] @relation("TrajetDepart")
+  trajets_arrivee Trajet[] @relation("TrajetArrivee")
+}
+
+
