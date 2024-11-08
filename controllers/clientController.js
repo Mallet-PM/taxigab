@@ -10,6 +10,11 @@ export const inscriptionClient = async (req, res) => {
     const { nom, prenom, telephone, email, motDePasse } = req.body;
 
     try {
+        const existingClient = await prisma.client.findUnique({ where: { email } });
+        if (existingClient) {
+            return res.status(400).json({ message: "Un client avec cet email existe déjà." });
+        }
+
         const hashedPassword = await bcrypt.hash(motDePasse, 10);
         const client = await prisma.client.create({
             data: {
@@ -35,7 +40,7 @@ export const clientConnexion = async (req, res) => {
         if (!client || !(await bcrypt.compare(motDePasse, client.motDePasse))) {
             return res.status(401).json({ message: "Identifiants invalides." });
         }
-        const token = jwt.sign({ id: client.id }, 'secret', { expiresIn: '1h' });
+        const token = jwt.sign({ id: client.id }, process.env.JWT_SECRET, { expiresIn: '1h' });
         res.json({ token });
     } catch (error) {
         res.status(500).json({ message: "Erreur lors de la connexion.", error });
@@ -45,7 +50,7 @@ export const clientConnexion = async (req, res) => {
 // Demande d'une course
 export const demanderUneCourse = async (req, res) => {
     const { pointDepart, destination } = req.body;
-    const clientId = req.user.id; // ID du client
+    const clientId = req.user.id;
 
     try {
         const course = await prisma.course.create({
@@ -82,14 +87,13 @@ export const consulterDetailCourse = async (req, res) => {
 
 // Récupération de l'historique des courses pour un client
 export const consulterHistoriqueCoursesClient = async (req, res) => {
-    const clientId = req.user.id; // Assurez-vous que le middleware d'authentification est en place
+    const clientId = req.user.id;
 
     try {
-        // Récupérer l'historique des courses pour un client donné
         const historique = await prisma.course.findMany({
-            where: { clientId: clientId },
-            include: { chauffeur: true }, // Inclure les détails du chauffeur
-            orderBy: { id: 'desc' }, // Ordre décroissant par ID
+            where: { clientId },
+            include: { chauffeur: true },
+            orderBy: { id: 'desc' },
         });
         res.json(historique);
     } catch (error) {
@@ -97,27 +101,33 @@ export const consulterHistoriqueCoursesClient = async (req, res) => {
     }
 };
 
-
 // Annulation d'une course
 export const annulerCourse = async (req, res) => {
     const { id } = req.params;
 
     try {
-        const course = await prisma.course.delete({
+        const course = await prisma.course.findUnique({ where: { id: Number(id) } });
+        if (!course) {
+            return res.status(404).json({ message: "Course non trouvée." });
+        }
+        await prisma.course.delete({
             where: { id: Number(id) },
         });
-        res.json({ message: "Course annulée.", course });
+        res.json({ message: "Course annulée." });
     } catch (error) {
         res.status(500).json({ message: "Erreur lors de l'annulation de la course.", error });
     }
 };
 
 // Récupération du profil
-export const consulterProdilClient = async (req, res) => {
-    const clientId = req.user.id; // Assurez-vous que le middleware d'authentification est en place
+export const consulterProfilClient = async (req, res) => {
+    const clientId = req.user.id;
 
     try {
         const client = await prisma.client.findUnique({ where: { id: clientId } });
+        if (!client) {
+            return res.status(404).json({ message: "Client non trouvé." });
+        }
         res.json(client);
     } catch (error) {
         res.status(500).json({ message: "Erreur lors de la récupération du profil.", error });
@@ -126,7 +136,7 @@ export const consulterProdilClient = async (req, res) => {
 
 // Mise à jour du profil
 export const mettreAjourProfil = async (req, res) => {
-    const clientId = req.user.id; // Assurez-vous que le middleware d'authentification est en place
+    const clientId = req.user.id;
     const { nom, prenom, telephone } = req.body;
 
     try {
@@ -140,13 +150,13 @@ export const mettreAjourProfil = async (req, res) => {
     }
 };
 
-// Liste des évaluations d'un chauffeur
-export const evaluerChauffeur = async (req, res) => {
-    const chauffeurId = req.user.id;
+// Récupération des évaluations d'un chauffeur
+export const consulterEvaluationsChauffeur = async (req, res) => {
+    const chauffeurId = req.params.chauffeurId; // Assurez-vous que le chauffeurId est passé dans les paramètres
 
     try {
         const evaluations = await prisma.evaluation.findMany({
-            where: { course: { chauffeurId } },
+            where: { course: { chauffeurId: Number(chauffeurId) } },
             include: { course: true },
         });
         res.json(evaluations);
@@ -177,7 +187,7 @@ export const evaluerCourse = async (req, res) => {
 // Ajout d'un paiement
 export const ajouterPaiement = async (req, res) => {
     const { montant } = req.body;
-    const clientId = req.user.id; // Assurez-vous que le middleware d'authentification est en place
+    const clientId = req.user.id;
 
     try {
         const paiement = await prisma.paiement.create({
@@ -207,7 +217,6 @@ export const consulterNotificationsClients = async (req, res) => {
     }
 };
 
-
 // Mot de passe oublié
 export const motDePasseOublier = async (req, res) => {
     // Logique de réinitialisation de mot de passe (ex: envoi d'email)
@@ -229,24 +238,3 @@ export const reinitialiserMotDePasse = async (req, res) => {
         res.status(500).json({ message: "Erreur lors de la réinitialisation du mot de passe.", error });
     }
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

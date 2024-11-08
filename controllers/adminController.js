@@ -9,6 +9,10 @@ const prisma = new PrismaClient();
 export const adminConnexion = async (req, res) => {
     const { email, motDePasse } = req.body;
 
+    if (!email || !motDePasse) {
+        return res.status(400).json({ message: "Email et mot de passe requis." });
+    }
+
     try {
         const admin = await prisma.admin.findUnique({ where: { email } });
         if (!admin || !(await bcrypt.compare(motDePasse, admin.motDePasse))) {
@@ -17,22 +21,19 @@ export const adminConnexion = async (req, res) => {
         const token = jwt.sign({ id: admin.id }, 'secret', { expiresIn: '1h' });
         res.json({ token });
     } catch (error) {
-        res.status(500).json({ message: "Erreur lors de la connexion.", error });
+        res.status(500).json({ message: "Erreur lors de la connexion.", error: error.message });
     }
 };
 
-
 // Gestion des chauffeurs
-export const consulterLiteChauffeurs = async (req, res) => {
+export const consulterListeChauffeurs = async (req, res) => {
     try {
         const chauffeurs = await prisma.chauffeur.findMany();
         res.json(chauffeurs);
     } catch (error) {
-        res.status(500).json({ message: "Erreur lors de la récupération des chauffeurs.", error });
+        res.status(500).json({ message: "Erreur lors de la récupération des chauffeurs.", error: error.message });
     }
 };
-
-
 
 // Récupération des taxis
 export const consulterListeTaxis = async (req, res) => {
@@ -40,7 +41,7 @@ export const consulterListeTaxis = async (req, res) => {
         const taxis = await prisma.taxi.findMany();
         res.json(taxis);
     } catch (error) {
-        res.status(500).json({ message: "Erreur lors de la récupération des taxis.", error });
+        res.status(500).json({ message: "Erreur lors de la récupération des taxis.", error: error.message });
     }
 };
 
@@ -55,14 +56,17 @@ export const detailTaxiById = async (req, res) => {
         }
         res.json(taxi);
     } catch (error) {
-        res.status(500).json({ message: "Erreur lors de la récupération du taxi.", error });
+        res.status(500).json({ message: "Erreur lors de la récupération du taxi.", error: error.message });
     }
 };
-
 
 // Ajout d'un taxi
 export const ajouterTaxi = async (req, res) => {
     const { plaque, modele } = req.body;
+
+    if (!plaque || !modele) {
+        return res.status(400).json({ message: "Plaque et modèle requis." });
+    }
 
     try {
         const taxi = await prisma.taxi.create({
@@ -70,7 +74,7 @@ export const ajouterTaxi = async (req, res) => {
         });
         res.status(201).json(taxi);
     } catch (error) {
-        res.status(500).json({ message: "Erreur lors de l'ajout du taxi.", error });
+        res.status(500).json({ message: "Erreur lors de l'ajout du taxi.", error: error.message });
     }
 };
 
@@ -85,10 +89,9 @@ export const desactiverTaxi = async (req, res) => {
         });
         res.json({ message: "Taxi désactivé.", taxi });
     } catch (error) {
-        res.status(500).json({ message: "Erreur lors de la désactivation du taxi.", error });
+        res.status(500).json({ message: "Erreur lors de la désactivation du taxi.", error: error.message });
     }
 };
-
 
 // Mise à jour d'un taxi
 export const mettreAjourTaxi = async (req, res) => {
@@ -102,13 +105,17 @@ export const mettreAjourTaxi = async (req, res) => {
         });
         res.json({ message: "Informations Taxi mises à jour.", updatedTaxi });
     } catch (error) {
-        res.status(500).json({ message: "Erreur lors de la mise à jour du taxi.", error });
+        res.status(500).json({ message: "Erreur lors de la mise à jour du taxi.", error: error.message });
     }
 };
 
 // Création d'une notification
 export const creerNotification = async (req, res) => {
     const { message, clientId, chauffeurId } = req.body;
+
+    if (!message || !clientId || !chauffeurId) {
+        return res.status(400).json({ message: "Message, clientId et chauffeurId requis." });
+    }
 
     try {
         const notification = await prisma.notification.create({
@@ -120,14 +127,6 @@ export const creerNotification = async (req, res) => {
         });
         res.status(201).json(notification);
     } catch (error) {
-        res.status(500).json({ message: "Erreur lors de la création de la notification.", error });
+        res.status(500).json({ message: "Erreur lors de la création de la notification.", error: error.message });
     }
 };
-
-
-
-
-
-
-
-
