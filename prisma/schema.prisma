@@ -9,6 +9,136 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mysql"
   url      = env("DATABASE_URL")
+}
+
+
+
+model Client {
+  id             Int          @id @default(autoincrement())
+  email          String       @unique
+  mot_de_passe   String
+  prenom         String
+  nom            String
+  telephone      String
+  localisation   Localisation? @relation(fields: [localisation_id], references: [id])
+  localisation_id Int?
+  note           Float?
+  courses        Course[]
+  cree_le        DateTime     @default(now())
+  mis_a_jour_le  DateTime     @updatedAt
+}
+
+model Admin {
+  id             Int          @id @default(autoincrement())
+  email          String       @unique
+  mot_de_passe   String
+  prenom         String
+  nom            String
+  cree_le        DateTime     @default(now())
+  mis_a_jour_le  DateTime     @updatedAt
+}
+
+model Chauffeur {
+  id            Int           @id @default(autoincrement())
+  numero_permis String        @unique
+  note          Float?
+  statut        StatutChauffeur @default(DISPONIBLE)
+  taxi          Taxi[]
+  courses       Course[]
+  cree_le       DateTime      @default(now())
+  mis_a_jour_le DateTime      @updatedAt
+}
+
+enum StatutChauffeur {
+  DISPONIBLE
+  OCCUPE
+  SUSPENDU
+}
+
+model Taxi {
+  id             Int           @id @default(autoincrement())
+  plaque         String        @unique
+  marque         String
+  modele         String
+  annee          Int
+  couleur        String
+  statut         StatutTaxi @default(DISPONIBLE)
+  chauffeur      Chauffeur?    @relation(fields: [chauffeur_id], references: [id])
+  chauffeur_id   Int?
+  courses        Course[]
+  cree_le        DateTime      @default(now())
+  mis_a_jour_le  DateTime      @updatedAt
+}
+
+enum StatutTaxi {
+  DISPONIBLE
+  UTILISE
+  MAINTENANCE
+}
+
+model Course {
+  id               Int           @id @default(autoincrement())
+  localisation_depart Localisation @relation(fields: [localisation_depart_id], references: [id], name: "CourseDepart")
+  localisation_depart_id Int
+  localisation_arrivee Localisation @relation(fields: [localisation_arrivee_id], references: [id], name: "CourseArrivee")
+  localisation_arrivee_id Int
+  heure_depart       DateTime
+  heure_arrivee      DateTime
+  distance          Float
+  duree             Int
+  statut            StatutCourse  @default(EN_ATTENTE)
+  prix              Decimal
+  note              Float?
+  client            Client        @relation(fields: [client_id], references: [id])
+  client_id         Int
+  chauffeur         Chauffeur?   @relation(fields: [chauffeur_id], references: [id])
+  chauffeur_id      Int?
+  taxi              Taxi?        @relation(fields: [taxi_id], references: [id])
+  taxi_id           Int?
+  cree_le           DateTime      @default(now())
+  mis_a_jour_le     DateTime      @updatedAt
+  paiements         Paiement[]
+}
+
+enum StatutCourse {
+  EN_ATTENTE
+  ACCEPTE
+  EN_COURS
+  TERMINE
+  ANNULE
+}
+
+model Paiement {
+  id              Int            @id @default(autoincrement())
+  montant         Decimal
+  mode_paiement   ModePaiement
+  statut          StatutPaiement @default(EN_ATTENTE)
+  course          Course         @relation(fields: [course_id], references: [id])
+  course_id       Int
+  cree_le         DateTime       @default(now())
+  mis_a_jour_le   DateTime       @updatedAt
+}
+
+enum ModePaiement {
+  CARTE_CREDIT
+  CARTE_DEBIT
+  PORTEFEUILLE_MOBILE
+}
+
+enum StatutPaiement {
+  EN_ATTENTE
+  PAYE
+  ECHEC
+  REMBOURSE
+}
+
+model Localisation {
+  id             Int     @id @default(autoincrement())
+  latitude       Float
+  longitude      Float
+  clients        Client[]
+  courses_depart  Course[] @relation("CourseDepart")
+  courses_arrivee Course[] @relation("CourseArrivee")
 }
