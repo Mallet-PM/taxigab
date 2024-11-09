@@ -7,7 +7,9 @@ import {
     ajouterTaxi, 
     desactiverTaxi, 
     mettreAjourTaxi, 
-    creerNotification 
+    creerNotification,
+    recupererAdminById
+
 } from './controllers/adminController.js';
 import { verifyTokenAdmin } from './middlewares/authMiddleware.js'; // Assuming you have an authentication middleware for admin
 
@@ -24,6 +26,9 @@ router.get('/taxis', verifyTokenAdmin, consulterListeTaxis);
 
 // Détails d'un taxi
 router.get('/taxi/:id', verifyTokenAdmin, detailTaxiById);
+
+// Recupere admin
+router.get('/admin/:id', verifyTokenAdmin, recupererAdminById); //
 
 // Ajout d'un taxi
 router.post('/taxi', verifyTokenAdmin, ajouterTaxi);
