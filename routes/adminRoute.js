@@ -9,8 +9,8 @@ import {
     desactiverTaxi, 
     mettreAjourTaxi, 
     creerNotification 
-} from './controllers/adminController.js';
-import { verifyTokenAdmin } from './middlewares/authMiddleware.js'; // Assuming you have an authentication middleware for admin
+} from '../controllers/adminController.js';
+import { verifyToken} from '../middleware/auth.js'; // Assuming you have an authentication middleware for admin
 
 const router = express.Router();
 
@@ -22,7 +22,7 @@ router.get('/chauffeurs',asyncHandler(consulterListeChauffeurs));
 router.get('/taxis', asyncHandler(consulterListeTaxis));
 
 // Détails d'un taxi
-router.get('/taxi/:id', verifyTokenAdmin, detailTaxiById);
+router.get('/taxi/:id', verifyToken, detailTaxiById);
 
 // Ajout d'un nouveau taxi
 router.post('/taxi', asyncHandler(ajouterTaxi));
