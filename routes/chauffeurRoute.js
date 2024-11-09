@@ -9,36 +9,37 @@ import {
     envoyerPosition, 
     consulterHistoriqueCourses, 
     consulterNotificationsChauffeur 
-} from './controllers/driverController.js';
-import { verifyToken } from './middlewares/authMiddleware.js'; // Assuming you have an authentication middleware
+} from '../controllers/chauffeurController.js';
+import { verifyToken } from '../middleware/auth.js'; // Assuming you have an authentication middleware
+import { login } from '../controllers/authController.js';
 
-const router = express.Router();
+const chauffeurrouter = express.Router();
 
 // Connexion d'un chauffeur
-router.post('/connexion', chauffeurConnexion);
+chauffeurrouter.post('/connexion',login, chauffeurConnexion);
 
 // Consulte le profil
-router.get('/profil', verifyToken, consulterProfilChauffeur);
+chauffeurrouter.get('/profil', verifyToken, consulterProfilChauffeur);
 
 // Liste des évaluations
-router.get('/evaluations', verifyToken, consulterEvaluations);
+chauffeurrouter.get('/evaluations', verifyToken, consulterEvaluations);
 
 // Liste des demandes de course
-router.get('/demandes', verifyToken, consulterListeCourse);
+chauffeurrouter.get('/demandes', verifyToken, consulterListeCourse);
 
 // Acceptation d'une course
-router.put('/course/:id/accepter', verifyToken, accepterCourse);
+chauffeurrouter.put('/course/:id/accepter', verifyToken, accepterCourse);
 
 // Indisponible pour une course
-router.put('/course/:id/indisponible', verifyToken, courseIndisponible);
+chauffeurrouter.put('/course/:id/indisponible', verifyToken, courseIndisponible);
 
 // Envoi de localisation
-router.post('/position', verifyToken, envoyerPosition);
+chauffeurrouter.post('/position', verifyToken, envoyerPosition);
 
 // Historique des courses
-router.get('/historique-courses', verifyToken, consulterHistoriqueCourses);
+chauffeurrouter.get('/historique-courses', verifyToken, consulterHistoriqueCourses);
 
 // Récupération des notifications pour un chauffeur
-router.get('/notifications', verifyToken, consulterNotificationsChauffeur);
+chauffeurrouter.get('/notifications', verifyToken, consulterNotificationsChauffeur);
 
-export default router;
+export default chauffeurrouter;

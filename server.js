@@ -1,6 +1,9 @@
 import express from 'express'
+import clientrouter from './routes/clientsRoutes.js';
 import router from './routes/adminRoute.js'
+import chauffeurrouter from './routes/chauffeurRoute.js'
 import { PrismaClient } from '@prisma/client';
+import localisationrouter from './routes/localisationRoute.js'
  const app = express()
  const port = 4000
 
@@ -21,6 +24,10 @@ import { PrismaClient } from '@prisma/client';
   
   connect();
  app.use('/',router)
+ app.use('/',clientrouter)
+ app.use('/',chauffeurrouter)
+ app.use('/',localisationrouter)
+
 
  app.get('/api', (req, res) => {
     res.send('Hello World!')
