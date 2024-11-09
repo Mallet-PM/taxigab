@@ -8,8 +8,8 @@ import {
     desactiverTaxi, 
     mettreAjourTaxi, 
     creerNotification 
-} from './controllers/adminController.js';
-import { verifyTokenAdmin } from './middlewares/authMiddleware.js'; // Assuming you have an authentication middleware for admin
+} from '../controllers/adminController.js';
+import { verifyToken } from '../middleware/auth.js'; // Assuming you have an authentication middleware for admin
 
 const router = express.Router();
 
@@ -17,24 +17,24 @@ const router = express.Router();
 router.post('/connexion', adminConnexion);
 
 // Gestion des chauffeurs
-router.get('/chauffeurs', verifyTokenAdmin, consulterListeChauffeurs);
+router.get('/chauffeurs', verifyTokenA, consulterListeChauffeurs);
 
 // Récupération des taxis
-router.get('/taxis', verifyTokenAdmin, consulterListeTaxis);
+router.get('/taxis', verifyToken, consulterListeTaxis);
 
 // Détails d'un taxi
-router.get('/taxi/:id', verifyTokenAdmin, detailTaxiById);
+router.get('/taxi/:id', verifyToken, detailTaxiById);
 
 // Ajout d'un taxi
-router.post('/taxi', verifyTokenAdmin, ajouterTaxi);
+router.post('/taxi', verifyToken, ajouterTaxi);
 
 // Désactivation d'un taxi
-router.put('/taxi/:id/desactiver', verifyTokenAdmin, desactiverTaxi);
+router.put('/taxi/:id/desactiver', verifyToken, desactiverTaxi);
 
 // Mise à jour d'un taxi
-router.put('/taxi/:id', verifyTokenAdmin, mettreAjourTaxi);
+router.put('/taxi/:id', verifyToken, mettreAjourTaxi);
 
 // Création d'une notification
-router.post('/notification', verifyTokenAdmin, creerNotification);
+router.post('/notification', verifyToken, creerNotification);
 
 export default router;
