@@ -26,7 +26,7 @@ export const adminConnexion = async (req, res) => {
 };
 
 // Récupération d'un admin par ID
-export const recupererAdmin = async (req, res) => {
+export const recupererAdminById = async (req, res) => {
     const { id } = req.params;
 
     try {
